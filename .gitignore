@@ -97,3 +97,8 @@ InitTestScene*.unity*
 
 # Auto-generated scenes by play mode tests
 /[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Large files exceeding GitHub's size limits
+Assets/LoafbrrAssets/BackroomsLikeAssetRe/scenes/LevelTst/Lightmap-0_comp_light.exr
+Assets/Asset/BackroomsLikeAsset/BlendFile/BackRoomsLike_Preview_001.zip
+Assets/Asset/BackroomsLikeAsset/BlendFile/Props_only.zip
