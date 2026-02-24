@@ -1,0 +1,2 @@
+Assets/LoafbrrAssets/BackroomsLikeAssetRe/scenes/LevelTst/Lightmap-0_comp_light.exr filter=lfs diff=lfs merge=lfs -text
+Assets/Asset/BackroomsLikeAsset/BlendFile/*.zip filter=lfs diff=lfs merge=lfs -text
