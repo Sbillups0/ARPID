@@ -1,43 +1,63 @@
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
+using System.Collections;
 
 [RequireComponent(typeof(UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable))]
 public class ChangeOnGrab : MonoBehaviour
 {
-    [Header("Colors")]
-    public Color releasedColor = Color.white;
-    public Color grabbedColor = Color.green;
+    [Header("Model References")]
+    public GameObject cleanModel;
+    public GameObject bloodyModel;
 
-    Renderer _renderer;
-    UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable _grab;
+    [Header("Settings")]
+    public float changeDelay = 1f;
+
+    UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grab;
+    Coroutine swapRoutine;
 
     void Awake()
     {
-        _renderer = GetComponent<Renderer>();
-        _grab = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+        grab = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
 
-        // Use .material to get an instance for THIS object (so you don't recolor a shared material asset).
-        SetColor(releasedColor);
+        cleanModel.SetActive(true);
+        bloodyModel.SetActive(false);
     }
 
     void OnEnable()
     {
-        _grab.selectEntered.AddListener(OnSelectEntered);
-        _grab.selectExited.AddListener(OnSelectExited);
+        grab.selectEntered.AddListener(OnGrab);
+        grab.selectExited.AddListener(OnRelease);
     }
 
     void OnDisable()
     {
-        _grab.selectEntered.RemoveListener(OnSelectEntered);
-        _grab.selectExited.RemoveListener(OnSelectExited);
+        grab.selectEntered.RemoveListener(OnGrab);
+        grab.selectExited.RemoveListener(OnRelease);
     }
 
-    void OnSelectEntered(SelectEnterEventArgs args) => SetColor(grabbedColor);
-    void OnSelectExited(SelectExitEventArgs args) => SetColor(releasedColor);
-
-    void SetColor(Color c)
+    void OnGrab(SelectEnterEventArgs args)
     {
-        if (_renderer != null)
-            _renderer.material.color = c;
+        if (swapRoutine != null)
+            StopCoroutine(swapRoutine);
+
+        swapRoutine = StartCoroutine(SwapAfterDelay());
+    }
+
+    void OnRelease(SelectExitEventArgs args)
+    {
+        if (swapRoutine != null)
+            StopCoroutine(swapRoutine);
+
+        // Optional: revert when dropped
+        cleanModel.SetActive(true);
+        bloodyModel.SetActive(false);
+    }
+
+    IEnumerator SwapAfterDelay()
+    {
+        yield return new WaitForSeconds(changeDelay);
+
+        cleanModel.SetActive(false);
+        bloodyModel.SetActive(true);
     }
 }
