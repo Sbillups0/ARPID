@@ -20,7 +20,7 @@ public class FilterTrigger : MonoBehaviour
     {
         // // In XR, the collider entering may be a child; root tag check is safest
         // if (!other.transform.root.CompareTag("Player")) return;
-
+        if (!other.CompareTag("Player")) return;
         if (routine != null) StopCoroutine(routine);
         routine = StartCoroutine(Apply());
     }
