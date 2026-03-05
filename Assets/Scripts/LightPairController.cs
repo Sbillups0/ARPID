@@ -20,18 +20,48 @@ public class LightPairController : MonoBehaviour
     public Color secondaryPointColor = Color.red;
     public float secondaryPointIntensity = 1f;
 
-    [Header("Flicker settings (both lights flicker together)")]
+    [Header("Flicker settings (normal)")]
     public Vector2 flickerInterval = new Vector2(0.04f, 0.12f);
     public Vector2 flickerMultiplierRange = new Vector2(0.35f, 1.15f);
 
-    public bool IsOn { get; private set; } = true;
-    public bool UsingSecondary { get; private set; } = false;
-    public bool IsFlickering { get; private set; } = false;
+    [Header("Start state")]
+    public bool startOn = true;
+    public bool startUseSecondary = false;
+
+    // Effective state (what’s actually happening)
+    public bool IsOn { get; private set; }
+    public bool UsingSecondary { get; private set; }
+    public bool IsFlickering { get; private set; }
+
+    // Base state (what the ceiling/game wants normally)
+    bool _baseOn;
+    bool _baseUseSecondary;
+    bool _baseFlicker;
+
+    // Suppression channels for future logic
+    bool _groupSuppressed;
+    bool _proximitySuppressed;
+
+    // Surge override
+    bool _surgeActive;
+    bool _surgeUseSecondary;
+    Vector2 _surgeInterval;
+    Vector2 _surgeRange;
+    bool _surgeOverrideParams;
 
     Coroutine _flickerRoutine;
 
-    // Emits flicker multiplier samples so the ceiling can mirror on emission.
+    // Ceiling listens to this to mirror emission flicker
     public event Action<float> OnFlickerSample;
+
+    void Awake()
+    {
+        _baseOn = startOn;
+        _baseUseSecondary = startUseSecondary;
+        _baseFlicker = false;
+
+        RecomputeAndApply();
+    }
 
     void OnDisable()
     {
@@ -39,39 +69,92 @@ public class LightPairController : MonoBehaviour
         OnFlickerSample?.Invoke(0f);
     }
 
-    // --- Called by ceiling/room/game manager ---
+    // ---------------- Base controls (ceiling/game manager) ----------------
 
-    public void SetOn(bool on)
+    public void SetBaseOn(bool on)
     {
-        IsOn = on;
+        _baseOn = on;
+        RecomputeAndApply();
+    }
 
-        if (spotLight) spotLight.enabled = on;
-        if (pointLight) pointLight.enabled = on;
+    public void SetBaseUseSecondary(bool useSecondary)
+    {
+        _baseUseSecondary = useSecondary;
+        RecomputeAndApply();
+    }
 
-        if (!on)
+    public void SetBaseFlicker(bool flicker)
+    {
+        _baseFlicker = flicker;
+        RecomputeAndApply();
+    }
+
+    // ---------------- Suppression channels (ready for group/proximity) ----------------
+
+    public void SetGroupSuppressed(bool suppressed)
+    {
+        _groupSuppressed = suppressed;
+        RecomputeAndApply();
+    }
+
+    public void SetProximitySuppressed(bool suppressed)
+    {
+        _proximitySuppressed = suppressed;
+        RecomputeAndApply();
+    }
+
+    // ---------------- Surge API (GameManager/ceiling calls this) ----------------
+
+    /// <summary>
+    /// Surge forces flicker ON, and optionally forces secondary colors.
+    /// If overrideParams=true, uses the provided interval/range for the surge.
+    /// </summary>
+    public void BeginSurge(bool useSecondary, bool overrideParams = false,
+                           Vector2 surgeInterval = default, Vector2 surgeRange = default)
+    {
+        _surgeActive = true;
+        _surgeUseSecondary = useSecondary;
+
+        _surgeOverrideParams = overrideParams;
+        if (overrideParams)
         {
-            StopFlicker();
-            OnFlickerSample?.Invoke(0f);
-            return;
+            _surgeInterval = (surgeInterval == default) ? new Vector2(0.02f, 0.08f) : surgeInterval;
+            _surgeRange = (surgeRange == default) ? new Vector2(0.05f, 1.35f) : surgeRange;
         }
 
-        ApplyStableLook();
-        if (IsFlickering) StartFlicker();
-        else OnFlickerSample?.Invoke(1f);
+        RecomputeAndApply();
     }
 
-    public void SetUseSecondary(bool useSecondary)
+    public void EndSurge()
     {
-        UsingSecondary = useSecondary;
-        if (!IsOn) return;
-
-        ApplyStableLook();
-        if (!IsFlickering) OnFlickerSample?.Invoke(1f);
+        _surgeActive = false;
+        _surgeOverrideParams = false;
+        RecomputeAndApply();
     }
 
-    public void SetFlicker(bool enable)
+    // ---------------- Pair tuning (RoomCeilingController uses these) ----------------
+
+    public void SetPrimaryColors(Color spot, Color point) { primarySpotColor = spot; primaryPointColor = point; RecomputeAndApply(); }
+    public void SetSecondaryColors(Color spot, Color point) { secondarySpotColor = spot; secondaryPointColor = point; RecomputeAndApply(); }
+    public void SetPrimaryIntensities(float spotI, float pointI) { primarySpotIntensity = spotI; primaryPointIntensity = pointI; RecomputeAndApply(); }
+    public void SetSecondaryIntensities(float spotI, float pointI) { secondarySpotIntensity = spotI; secondaryPointIntensity = pointI; RecomputeAndApply(); }
+
+    // ---------------- Internals ----------------
+
+    void RecomputeAndApply()
     {
-        IsFlickering = enable;
+        bool suppressed = _groupSuppressed || _proximitySuppressed;
+
+        bool desiredOn = _baseOn && !suppressed;
+        bool desiredSecondary = _surgeActive ? _surgeUseSecondary : _baseUseSecondary;
+        bool desiredFlicker = _surgeActive || _baseFlicker;
+
+        IsOn = desiredOn;
+        UsingSecondary = desiredSecondary;
+        IsFlickering = desiredFlicker;
+
+        if (spotLight) spotLight.enabled = IsOn;
+        if (pointLight) pointLight.enabled = IsOn;
 
         if (!IsOn)
         {
@@ -80,7 +163,8 @@ public class LightPairController : MonoBehaviour
             return;
         }
 
-        if (enable) StartFlicker();
+        if (IsFlickering)
+            StartFlicker();
         else
         {
             StopFlicker();
@@ -88,14 +172,6 @@ public class LightPairController : MonoBehaviour
             OnFlickerSample?.Invoke(1f);
         }
     }
-
-    // GameManager-friendly setters
-    public void SetPrimaryColors(Color spot, Color point) { primarySpotColor = spot; primaryPointColor = point; if (IsOn && !UsingSecondary && !IsFlickering) ApplyStableLook(); }
-    public void SetSecondaryColors(Color spot, Color point) { secondarySpotColor = spot; secondaryPointColor = point; if (IsOn && UsingSecondary && !IsFlickering) ApplyStableLook(); }
-    public void SetPrimaryIntensities(float spotI, float pointI) { primarySpotIntensity = spotI; primaryPointIntensity = pointI; if (IsOn && !UsingSecondary && !IsFlickering) ApplyStableLook(); }
-    public void SetSecondaryIntensities(float spotI, float pointI) { secondarySpotIntensity = spotI; secondaryPointIntensity = pointI; if (IsOn && UsingSecondary && !IsFlickering) ApplyStableLook(); }
-
-    // --- Internals ---
 
     void ApplyStableLook()
     {
@@ -111,9 +187,21 @@ public class LightPairController : MonoBehaviour
         }
     }
 
+    Vector2 CurrentInterval()
+    {
+        if (_surgeActive && _surgeOverrideParams) return _surgeInterval;
+        return flickerInterval;
+    }
+
+    Vector2 CurrentRange()
+    {
+        if (_surgeActive && _surgeOverrideParams) return _surgeRange;
+        return flickerMultiplierRange;
+    }
+
     void StartFlicker()
     {
-        StopFlicker();
+        if (_flickerRoutine != null) return; // already running
         _flickerRoutine = StartCoroutine(FlickerLoop());
     }
 
@@ -130,7 +218,10 @@ public class LightPairController : MonoBehaviour
     {
         while (IsOn && IsFlickering)
         {
-            float mult = UnityEngine.Random.Range(flickerMultiplierRange.x, flickerMultiplierRange.y);
+            var range = CurrentRange();
+            var interval = CurrentInterval();
+
+            float mult = UnityEngine.Random.Range(range.x, range.y);
 
             if (!UsingSecondary)
             {
@@ -144,11 +235,19 @@ public class LightPairController : MonoBehaviour
             }
 
             OnFlickerSample?.Invoke(mult);
-
-            yield return new WaitForSeconds(UnityEngine.Random.Range(flickerInterval.x, flickerInterval.y));
+            yield return new WaitForSeconds(UnityEngine.Random.Range(interval.x, interval.y));
         }
 
-        ApplyStableLook();
-        OnFlickerSample?.Invoke(IsOn ? 1f : 0f);
+        _flickerRoutine = null;
+
+        if (IsOn)
+        {
+            ApplyStableLook();
+            OnFlickerSample?.Invoke(1f);
+        }
+        else
+        {
+            OnFlickerSample?.Invoke(0f);
+        }
     }
 }
