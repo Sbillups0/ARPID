@@ -321,4 +321,9 @@ public class CeilingLightController : MonoBehaviour
             r.SetPropertyBlock(_mpb);
         }
     }
+    public void SetForceEmissionOff(bool off)
+    {
+        forceEmissionOff = off;
+        ApplyEmission();
+    }
 }
