@@ -5,14 +5,15 @@ TagManager:
   serializedVersion: 3
   tags:
   - Anchor
+  - SamplesInfoPanel
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Wall
   - Water
   - UI
-  - 
+  - Floor
   - 
   - 
   - 
