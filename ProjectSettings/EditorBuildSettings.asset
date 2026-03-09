@@ -11,10 +11,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/BasicScene.unity
     guid: 4e9fef26e6adb88479ad1b9834a32d94
-  - enabled: 0
+  - enabled: 1
     path: Assets/Scenes/AKMar5.unity
     guid: d12f340b4a7694ee9a9e5d783888555d
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/MannequinScene.unity
     guid: 0709a98ed54c34b41834c398ef876e6b
   m_configObjects:
