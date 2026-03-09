@@ -5,16 +5,29 @@ public class CeilingLightController : MonoBehaviour
 {
     public enum EmissionFlickerCombineMode { Max, Average, Pair0Only }
 
-    [Header("Auto wiring (recommended for variable ceiling sizes)")]
+    [Header("Auto wiring")]
     public bool autoFindPairsOnAwake = true;
-    public bool autoFindEmissiveOnAwake = false; // Only enable if you want ALL child Renderers (usually too broad)
+    public bool autoFindEmissiveOnAwake = false;
 
-    [Header("Light pairs (LightPair0, LightPair1, ...)")]
+    [Header("Children used by this ceiling")]
     public LightPairController[] pairs;
-
-    [Header("Emission renderers (panel mesh renderers only)")]
     public Renderer[] emissiveRenderers;
     public string emissionColorProperty = "_EmissionColor";
+
+    [Header("Default pair settings (applied to every child LightPair)")]
+    public bool applyPairDefaultsOnAwake = true;
+
+    public Color defaultPrimarySpotColor = new Color32(229, 255, 184, 255);   // E5FFB8
+    public float defaultPrimarySpotIntensity = 4f;
+
+    public Color defaultPrimaryPointColor = new Color32(199, 213, 147, 255);  // C7D593
+    public float defaultPrimaryPointIntensity = 1f;
+
+    public Color defaultSecondarySpotColor = Color.red;
+    public float defaultSecondarySpotIntensity = 10f;
+
+    public Color defaultSecondaryPointColor = Color.red;
+    public float defaultSecondaryPointIntensity = 1f;
 
     [Header("Primary / Secondary emission")]
     public Color primaryEmissionColor = Color.white;
@@ -26,53 +39,57 @@ public class CeilingLightController : MonoBehaviour
     public bool emissionMirrorsFlicker = true;
     public EmissionFlickerCombineMode emissionFlickerMode = EmissionFlickerCombineMode.Max;
 
-    [Header("Reuse as Floor / Force emission off")]
-    public bool treatAsFloor = false;      // if true: lights forced OFF and emission OFF
-    public bool forceEmissionOff = false;  // if true: emission forced OFF (lights can still be on)
+    [Header("Special modes")]
+    public bool treatAsFloor = false;
+    public bool forceEmissionOff = false;
 
-    [Header("Start State")]
+    [Header("Start state")]
     public bool startOn = true;
     public bool startUseSecondary = false;
+    public bool startAllPairsFlicker = false;
 
-    // Base state (normal)
     bool _baseOn;
     bool _baseUseSecondary;
-    bool _baseFlicker; // global flicker flag (optional)
-
-    // Suppression channels (future group + proximity)
     bool _groupSuppressed;
     bool _proximitySuppressed;
 
-    // Surge override for this ceiling
     bool _surgeActive;
     bool _surgeUseSecondary;
     bool _surgeOverrideParams;
     Vector2 _surgeInterval = new Vector2(0.02f, 0.08f);
     Vector2 _surgeRange = new Vector2(0.05f, 1.35f);
 
+    bool _emissionSecondaryOverrideActive;
+    bool _emissionSecondaryOverrideValue;
+
     public bool IsOn { get; private set; }
     public bool UsingSecondary { get; private set; }
     public bool IsSurging => _surgeActive;
+    public int PairCount => pairs == null ? 0 : pairs.Length;
 
     MaterialPropertyBlock _mpb;
-
     float[] _pairMult;
     Action<float>[] _handlers;
 
     void Awake()
     {
         if (autoFindPairsOnAwake)
-            pairs = GetComponentsInChildren<LightPairController>(true);
+            RefreshPairs();
 
         if (autoFindEmissiveOnAwake)
-            emissiveRenderers = GetComponentsInChildren<Renderer>(true);
+            RefreshEmissiveRenderers();
+
+        if (applyPairDefaultsOnAwake)
+            ApplyPairDefaultsToChildren();
 
         _baseOn = startOn;
         _baseUseSecondary = startUseSecondary;
-        _baseFlicker = false;
 
         BuildFlickerHooks();
         RecomputeAndApply();
+
+        if (startAllPairsFlicker)
+            SetAllPairsFlicker(true);
     }
 
     void OnDestroy()
@@ -80,31 +97,52 @@ public class CeilingLightController : MonoBehaviour
         UnhookPairs();
     }
 
-    // --------------------------------------------------------------------
-    // Backwards-compatible API (so your existing scripts compile)
-    // --------------------------------------------------------------------
+    [ContextMenu("Refresh Child LightPairs")]
+    public void RefreshPairs()
+    {
+        pairs = GetComponentsInChildren<LightPairController>(true);
+    }
+
+    [ContextMenu("Refresh Child Renderers (emissive)")]
+    public void RefreshEmissiveRenderers()
+    {
+        emissiveRenderers = GetComponentsInChildren<Renderer>(true);
+    }
+
+    [ContextMenu("Apply Pair Defaults To Children")]
+    public void ApplyPairDefaultsToChildren()
+    {
+        if (pairs == null || pairs.Length == 0)
+            RefreshPairs();
+
+        if (pairs == null) return;
+
+        foreach (var pair in pairs)
+        {
+            if (!pair) continue;
+
+            pair.SetPrimaryColors(defaultPrimarySpotColor, defaultPrimaryPointColor);
+            pair.SetPrimaryIntensities(defaultPrimarySpotIntensity, defaultPrimaryPointIntensity);
+
+            pair.SetSecondaryColors(defaultSecondarySpotColor, defaultSecondaryPointColor);
+            pair.SetSecondaryIntensities(defaultSecondarySpotIntensity, defaultSecondaryPointIntensity);
+        }
+    }
+
     public void SetOn(bool on) => SetBaseOn(on);
     public void SetUseSecondary(bool useSecondary) => SetBaseUseSecondary(useSecondary);
-    public void SetFlicker(bool flicker) => SetBaseFlicker(flicker);
+    public void SetFlicker(bool flicker) => SetAllPairsFlicker(flicker);
 
-    /// <summary>
-    /// Old API: flicker ONE pair. This works with your RandomLightPairFlicker and Surge scripts.
-    /// </summary>
     public void SetPairFlicker(int pairIndex, bool flicker)
     {
         if (pairs == null || pairIndex < 0 || pairIndex >= pairs.Length) return;
         if (!pairs[pairIndex]) return;
 
-        // Ensure ceiling is on (if it’s off, pair won’t be visible)
         if (flicker) SetBaseOn(true);
-
         pairs[pairIndex].SetBaseFlicker(flicker);
         ApplyEmission();
     }
 
-    // --------------------------------------------------------------------
-    // New GameManager-ready API (base, suppression, surge)
-    // --------------------------------------------------------------------
     public void SetBaseOn(bool on)
     {
         _baseOn = on;
@@ -117,18 +155,59 @@ public class CeilingLightController : MonoBehaviour
         RecomputeAndApply();
     }
 
-    /// <summary>
-    /// Global flicker for all pairs (optional). Per-pair flicker remains possible via SetPairFlicker.
-    /// </summary>
-    public void SetBaseFlicker(bool flickerAllPairs)
+    public void SetAllPairsFlicker(bool flicker)
     {
-        _baseFlicker = flickerAllPairs;
+        if (pairs == null) return;
 
-        if (pairs != null)
-            foreach (var p in pairs)
-                if (p) p.SetBaseFlicker(flickerAllPairs);
+        foreach (var p in pairs)
+        {
+            if (!p) continue;
+            p.SetBaseFlicker(flicker);
+        }
 
         ApplyEmission();
+    }
+
+    public void BeginSurge(bool useSecondary, bool overrideParams = false,
+                           Vector2? surgeInterval = null, Vector2? surgeRange = null)
+    {
+        _surgeActive = true;
+        _surgeUseSecondary = useSecondary;
+        _surgeOverrideParams = overrideParams;
+
+        if (overrideParams)
+        {
+            _surgeInterval = surgeInterval ?? _surgeInterval;
+            _surgeRange = surgeRange ?? _surgeRange;
+        }
+
+        if (pairs != null)
+        {
+            foreach (var p in pairs)
+            {
+                if (!p) continue;
+                p.BeginSurge(useSecondary, overrideParams, _surgeInterval, _surgeRange);
+            }
+        }
+
+        RecomputeAndApply();
+    }
+
+    public void EndSurge()
+    {
+        _surgeActive = false;
+        _surgeOverrideParams = false;
+
+        if (pairs != null)
+        {
+            foreach (var p in pairs)
+            {
+                if (!p) continue;
+                p.EndSurge();
+            }
+        }
+
+        RecomputeAndApply();
     }
 
     public void SetGroupSuppressed(bool suppressed)
@@ -145,41 +224,11 @@ public class CeilingLightController : MonoBehaviour
 
     public void SetPairProximitySuppressed(int pairIndex, bool suppressed)
     {
-        if (pairs == null || pairIndex < 0 || pairIndex >= pairs.Length || !pairs[pairIndex]) return;
+        if (pairs == null || pairIndex < 0 || pairIndex >= pairs.Length) return;
+        if (!pairs[pairIndex]) return;
+
         pairs[pairIndex].SetProximitySuppressed(suppressed);
         ApplyEmission();
-    }
-
-    public void BeginSurge(bool useSecondary, bool overrideParams = false,
-                           Vector2? surgeInterval = null, Vector2? surgeRange = null)
-    {
-        _surgeActive = true;
-        _surgeUseSecondary = useSecondary;
-
-        _surgeOverrideParams = overrideParams;
-        if (overrideParams)
-        {
-            _surgeInterval = surgeInterval ?? _surgeInterval;
-            _surgeRange = surgeRange ?? _surgeRange;
-        }
-
-        if (pairs != null)
-            foreach (var p in pairs)
-                if (p) p.BeginSurge(useSecondary, overrideParams, _surgeInterval, _surgeRange);
-
-        RecomputeAndApply();
-    }
-
-    public void EndSurge()
-    {
-        _surgeActive = false;
-        _surgeOverrideParams = false;
-
-        if (pairs != null)
-            foreach (var p in pairs)
-                if (p) p.EndSurge();
-
-        RecomputeAndApply();
     }
 
     public void SetPrimaryEmission(Color color, float multiplier)
@@ -196,16 +245,34 @@ public class CeilingLightController : MonoBehaviour
         ApplyEmission();
     }
 
-    // --------------------------------------------------------------------
-    // Internals
-    // --------------------------------------------------------------------
+    public void SetForceEmissionOff(bool off)
+    {
+        forceEmissionOff = off;
+        ApplyEmission();
+    }
+
+    public void SetEmissionUseSecondaryOverride(bool useSecondary)
+    {
+        _emissionSecondaryOverrideActive = true;
+        _emissionSecondaryOverrideValue = useSecondary;
+        ApplyEmission();
+    }
+
+    public void ClearEmissionUseSecondaryOverride()
+    {
+        _emissionSecondaryOverrideActive = false;
+        ApplyEmission();
+    }
+
     void BuildFlickerHooks()
     {
         UnhookPairs();
 
         _pairMult = new float[pairs != null ? pairs.Length : 0];
         _handlers = new Action<float>[pairs != null ? pairs.Length : 0];
-        for (int i = 0; i < _pairMult.Length; i++) _pairMult[i] = 1f;
+
+        for (int i = 0; i < _pairMult.Length; i++)
+            _pairMult[i] = 1f;
 
         HookPairs();
     }
@@ -225,7 +292,8 @@ public class CeilingLightController : MonoBehaviour
                 if (_pairMult != null && idx < _pairMult.Length)
                     _pairMult[idx] = mult;
 
-                if (emissionMirrorsFlicker) ApplyEmission();
+                if (emissionMirrorsFlicker)
+                    ApplyEmission();
             };
 
             p.OnFlickerSample += _handlers[i];
@@ -235,22 +303,23 @@ public class CeilingLightController : MonoBehaviour
     void UnhookPairs()
     {
         if (pairs == null || _handlers == null) return;
+
         for (int i = 0; i < pairs.Length; i++)
+        {
             if (pairs[i] != null && _handlers[i] != null)
                 pairs[i].OnFlickerSample -= _handlers[i];
+        }
     }
 
     void RecomputeAndApply()
     {
         bool suppressed = _groupSuppressed || _proximitySuppressed;
-
         bool desiredOn = _baseOn && !suppressed && !treatAsFloor;
         bool desiredSecondary = _surgeActive ? _surgeUseSecondary : _baseUseSecondary;
 
         IsOn = desiredOn;
         UsingSecondary = desiredSecondary;
 
-        // Drive pairs base state (do NOT overwrite per-pair flicker here)
         if (pairs != null)
         {
             foreach (var p in pairs)
@@ -259,8 +328,6 @@ public class CeilingLightController : MonoBehaviour
 
                 p.SetGroupSuppressed(_groupSuppressed);
                 p.SetProximitySuppressed(_proximitySuppressed);
-
-                // Base state set every time is fine
                 p.SetBaseUseSecondary(_baseUseSecondary);
                 p.SetBaseOn(IsOn);
             }
@@ -274,17 +341,20 @@ public class CeilingLightController : MonoBehaviour
         if (emissiveRenderers == null || emissiveRenderers.Length == 0) return;
         if (_mpb == null) _mpb = new MaterialPropertyBlock();
 
-        // Off / floor / forced off => no emission
         if (!IsOn || treatAsFloor || forceEmissionOff)
         {
             SetEmission(Color.black);
             return;
         }
 
-        Color baseColor = UsingSecondary ? secondaryEmissionColor : primaryEmissionColor;
-        float baseMult = UsingSecondary ? secondaryEmissionMultiplier : primaryEmissionMultiplier;
+        bool emissionUsesSecondary = _emissionSecondaryOverrideActive
+            ? _emissionSecondaryOverrideValue
+            : UsingSecondary;
 
+        Color baseColor = emissionUsesSecondary ? secondaryEmissionColor : primaryEmissionColor;
+        float baseMult = emissionUsesSecondary ? secondaryEmissionMultiplier : primaryEmissionMultiplier;
         float flickerMult = emissionMirrorsFlicker ? CombinePairMultipliers() : 1f;
+
         SetEmission(baseColor * (baseMult * flickerMult));
     }
 
@@ -298,15 +368,19 @@ public class CeilingLightController : MonoBehaviour
                 return Mathf.Max(0f, _pairMult[0]);
 
             case EmissionFlickerCombineMode.Average:
+            {
                 float sum = 0f;
                 for (int i = 0; i < _pairMult.Length; i++) sum += _pairMult[i];
                 return Mathf.Max(0f, sum / _pairMult.Length);
+            }
 
             case EmissionFlickerCombineMode.Max:
             default:
-                float m = 0f;
-                for (int i = 0; i < _pairMult.Length; i++) m = Mathf.Max(m, _pairMult[i]);
-                return Mathf.Max(0f, m);
+            {
+                float max = 0f;
+                for (int i = 0; i < _pairMult.Length; i++) max = Mathf.Max(max, _pairMult[i]);
+                return Mathf.Max(0f, max);
+            }
         }
     }
 
@@ -320,10 +394,5 @@ public class CeilingLightController : MonoBehaviour
             if (!r) continue;
             r.SetPropertyBlock(_mpb);
         }
-    }
-    public void SetForceEmissionOff(bool off)
-    {
-        forceEmissionOff = off;
-        ApplyEmission();
     }
 }

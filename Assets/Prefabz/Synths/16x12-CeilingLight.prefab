@@ -40,7 +40,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 189715763215453947}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
@@ -167,7 +167,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 659815404875688633}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 0
   m_Color: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
@@ -294,7 +294,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1358480565908805079}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 0
   m_Color: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
@@ -430,17 +430,18 @@ MonoBehaviour:
   spotLight: {fileID: 2036130600911033537}
   pointLight: {fileID: 4677154965406432585}
   primarySpotColor: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
-  primarySpotIntensity: 25
+  primarySpotIntensity: 4
   primaryPointColor: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
-  primaryPointIntensity: 2
+  primaryPointIntensity: 1
   secondarySpotColor: {r: 1, g: 0, b: 0, a: 1}
-  secondarySpotIntensity: 10
+  secondarySpotIntensity: 4
   secondaryPointColor: {r: 1, g: 0, b: 0, a: 1}
   secondaryPointIntensity: 1
   flickerInterval: {x: 0.04, y: 0.12}
   flickerMultiplierRange: {x: 0.35, y: 1.15}
   startOn: 1
   startUseSecondary: 0
+  startFlicker: 0
 --- !u!1 &2668333282873568503
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,17 +491,18 @@ MonoBehaviour:
   spotLight: {fileID: 4238386849674925155}
   pointLight: {fileID: 3070203355134769085}
   primarySpotColor: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
-  primarySpotIntensity: 25
+  primarySpotIntensity: 4
   primaryPointColor: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
-  primaryPointIntensity: 2
+  primaryPointIntensity: 1
   secondarySpotColor: {r: 1, g: 0, b: 0, a: 1}
-  secondarySpotIntensity: 10
+  secondarySpotIntensity: 4
   secondaryPointColor: {r: 1, g: 0, b: 0, a: 1}
   secondaryPointIntensity: 1
   flickerInterval: {x: 0.04, y: 0.12}
   flickerMultiplierRange: {x: 0.35, y: 1.15}
   startOn: 1
   startUseSecondary: 0
+  startFlicker: 0
 --- !u!1 &4363640844490072710
 GameObject:
   m_ObjectHideFlags: 0
@@ -541,7 +543,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4363640844490072710}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
@@ -677,17 +679,18 @@ MonoBehaviour:
   spotLight: {fileID: 8184005213880562390}
   pointLight: {fileID: 668361596505071761}
   primarySpotColor: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
-  primarySpotIntensity: 25
+  primarySpotIntensity: 4
   primaryPointColor: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
-  primaryPointIntensity: 2
+  primaryPointIntensity: 1
   secondarySpotColor: {r: 1, g: 0, b: 0, a: 1}
-  secondarySpotIntensity: 10
+  secondarySpotIntensity: 4
   secondaryPointColor: {r: 1, g: 0, b: 0, a: 1}
   secondaryPointIntensity: 1
   flickerInterval: {x: 0.04, y: 0.12}
   flickerMultiplierRange: {x: 0.35, y: 1.15}
   startOn: 1
   startUseSecondary: 0
+  startFlicker: 0
 --- !u!1 &6084846515211017889
 GameObject:
   m_ObjectHideFlags: 0
@@ -728,7 +731,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6084846515211017889}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 0
   m_Color: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
@@ -855,7 +858,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6652993602519299568}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 0
   m_Color: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
@@ -991,17 +994,18 @@ MonoBehaviour:
   spotLight: {fileID: 4747555560459992038}
   pointLight: {fileID: 3385082214891736669}
   primarySpotColor: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
-  primarySpotIntensity: 25
+  primarySpotIntensity: 4
   primaryPointColor: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
-  primaryPointIntensity: 2
+  primaryPointIntensity: 1
   secondarySpotColor: {r: 1, g: 0, b: 0, a: 1}
-  secondarySpotIntensity: 10
+  secondarySpotIntensity: 4
   secondaryPointColor: {r: 1, g: 0, b: 0, a: 1}
   secondaryPointIntensity: 1
   flickerInterval: {x: 0.04, y: 0.12}
   flickerMultiplierRange: {x: 0.35, y: 1.15}
   startOn: 1
   startUseSecondary: 0
+  startFlicker: 0
 --- !u!1 &7841706423362173942
 GameObject:
   m_ObjectHideFlags: 0
@@ -1042,7 +1046,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7841706423362173942}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
@@ -1169,7 +1173,7 @@ Light:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8823747630596591641}
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 12
   m_Type: 2
   m_Color: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
@@ -1398,6 +1402,15 @@ MonoBehaviour:
   emissiveRenderers:
   - {fileID: 2957701923705991006}
   emissionColorProperty: _EmissionColor
+  applyPairDefaultsOnAwake: 1
+  defaultPrimarySpotColor: {r: 0.8980392, g: 1, b: 0.72156864, a: 1}
+  defaultPrimarySpotIntensity: 4
+  defaultPrimaryPointColor: {r: 0.78039217, g: 0.8352941, b: 0.5764706, a: 1}
+  defaultPrimaryPointIntensity: 1
+  defaultSecondarySpotColor: {r: 1, g: 0, b: 0, a: 1}
+  defaultSecondarySpotIntensity: 4
+  defaultSecondaryPointColor: {r: 1, g: 0, b: 0, a: 1}
+  defaultSecondaryPointIntensity: 1
   primaryEmissionColor: {r: 1, g: 1, b: 1, a: 1}
   primaryEmissionMultiplier: 2
   secondaryEmissionColor: {r: 1, g: 0, b: 0, a: 1}
@@ -1408,6 +1421,7 @@ MonoBehaviour:
   forceEmissionOff: 0
   startOn: 1
   startUseSecondary: 0
+  startAllPairsFlicker: 0
 --- !u!114 &4410058631849460536
 MonoBehaviour:
   m_ObjectHideFlags: 0

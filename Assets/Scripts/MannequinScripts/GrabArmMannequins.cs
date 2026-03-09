@@ -3,8 +3,14 @@ using UnityEngine.XR.Interaction.Toolkit;
 
 public class GrabArmMannequins : MonoBehaviour
 {
+    [Header("Existing mannequin behavior")]
     public FreezeOnLook[] mannequins;
-    public float gracePeriod = 1.0f;
+    public float gracePeriod = 1.5f;
+
+    [Header("Optional GameManager trigger")]
+    public BackroomsTestGameManager gameManager;
+    public string grabbedFlagName = "FlashlightGrabbed";
+    public bool setFlagOnGrab = true;
 
     UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable grab;
     bool hasArmed = false;
@@ -16,12 +22,14 @@ public class GrabArmMannequins : MonoBehaviour
 
     void OnEnable()
     {
-        grab.selectEntered.AddListener(OnGrab);
+        if (grab != null)
+            grab.selectEntered.AddListener(OnGrab);
     }
 
     void OnDisable()
     {
-        grab.selectEntered.RemoveListener(OnGrab);
+        if (grab != null)
+            grab.selectEntered.RemoveListener(OnGrab);
     }
 
     void OnGrab(SelectEnterEventArgs args)
@@ -35,8 +43,10 @@ public class GrabArmMannequins : MonoBehaviour
             m.Arm(gracePeriod);
         }
 
-        // Optional: if you have a Light component, turn it on here
-        // var light = GetComponentInChildren<Light>();
-        // if (light) light.enabled = true;
+        if (setFlagOnGrab && gameManager != null && !string.IsNullOrEmpty(grabbedFlagName))
+        {
+            gameManager.SetFlag(grabbedFlagName, true);
+        }
+
     }
 }
