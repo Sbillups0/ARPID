@@ -3,6 +3,8 @@ using UnityEngine.AI;
 
 public class FreezeOnLook : MonoBehaviour
 {
+    [Header("Activation")]
+    public bool behaviorEnabled = true;
     [Header("References")]
     public Transform targetCamera;          // XR camera (CenterEye)
     public NavMeshAgent agent;             
@@ -29,6 +31,12 @@ public class FreezeOnLook : MonoBehaviour
     [Header("Watch smoothing")]
     public float watchGraceOn = 0.05f;      // seconds required to become watched
     public float watchGraceOff = 0.10f;     // seconds required to become unwatched
+
+    [Header("Activation")]
+    public bool armed = false;                 // threat armed?
+    public float graceAfterArm = 1.0f;         // seconds before they can move after arming
+
+    float armedAtTime = -999f;
     float watchTimer;
     bool watchedState;
 
@@ -55,18 +63,28 @@ public class FreezeOnLook : MonoBehaviour
     {
         if (targetCamera == null || playerRoot == null) return;
 
+        // If not armed, always frozen
+        if (!armed)
+        {
+            Freeze();
+            return;
+        }
+
+        // Grace period after arming: still frozen
+        if (Time.time < armedAtTime + graceAfterArm)
+        {
+            Freeze();
+            return;
+        }
+
         bool nowWatched = IsWatched();
 
-        // Smooth in/out to prevent flicker at screen edges
         watchTimer += nowWatched ? Time.deltaTime : -Time.deltaTime;
         watchTimer = Mathf.Clamp(watchTimer, -watchGraceOff, watchGraceOn);
 
         watchedState = watchTimer >= 0f;
 
-        if (watchedState)
-        {
-            Freeze();
-        }
+        if (watchedState) Freeze();
         else
         {
             UnfreezeAndMove();
@@ -198,5 +216,17 @@ public class FreezeOnLook : MonoBehaviour
             int next = Random.Range(0, 3);
             animator.SetInteger(poseIndexParam, next);
         }
+    }
+    public void Arm(float graceSeconds)
+    {
+        armed = true;
+        graceAfterArm = graceSeconds;
+        armedAtTime = Time.time;
+
+        // Optional: reset smoothing so they don't instantly "unwatch" into motion
+        watchTimer = 0f;
+        watchedState = true;
+
+        Freeze();
     }
 }
