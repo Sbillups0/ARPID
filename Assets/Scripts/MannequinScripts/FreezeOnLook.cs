@@ -35,7 +35,9 @@ public class FreezeOnLook : MonoBehaviour
     [Header("Activation")]
     public bool armed = false;                 // threat armed?
     public float graceAfterArm = 1.0f;         // seconds before they can move after arming
-
+    // Add this field (optional)
+    [Header("Default (no animation) state")]
+    public bool keepDefaultUntilArmed = true;
     float armedAtTime = -999f;
     float watchTimer;
     bool watchedState;
@@ -57,6 +59,10 @@ public class FreezeOnLook : MonoBehaviour
             renderersToCheck = GetComponentsInChildren<Renderer>();
 
         poseTimer = Random.Range(minPoseHold, maxPoseHold);
+
+        // NEW: keep mannequin in its scene/default pose until armed
+        if (keepDefaultUntilArmed && animator != null)
+            animator.enabled = false;
     }
 
     void Update()
@@ -223,9 +229,12 @@ public class FreezeOnLook : MonoBehaviour
         graceAfterArm = graceSeconds;
         armedAtTime = Time.time;
 
-        // Optional: reset smoothing so they don't instantly "unwatch" into motion
         watchTimer = 0f;
         watchedState = true;
+
+        // NEW: turn animation on only when armed
+        if (animator != null && keepDefaultUntilArmed)
+            animator.enabled = true;
 
         Freeze();
     }
