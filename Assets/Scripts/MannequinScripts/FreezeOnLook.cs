@@ -10,9 +10,16 @@ public class FreezeOnLook : MonoBehaviour
     public string playerTag = "Player";
     public bool killOnlyWhenUnwatched = true;
     bool isDying;
-    public float killCheckInterval = 0.1f;   // NEW: prevents spam in OnTriggerStay
+    public float killCheckInterval = 0f;   // NEW: prevents spam in OnTriggerStay
     float nextKillCheckTime;
-
+    [Header("Death - look check")]
+    public float deathLookConeDegrees = 55f;   // smaller = stricter "must be looking at it"
+    public Transform deathAimPoint;            // optional: assign a head/chest bone; otherwise uses renderers bounds center
+    [Header("Death - distance fallback")]
+    public float killDistance = 0.6f;              // tune (0.4–0.8 usually)
+    public Transform killPoint;                    // optional (e.g., mannequin chest/head)
+    public float killCooldown = 0.25f;             // prevents double-firing
+    float nextAllowedKillTime;
     [Header("References")]
     public Transform targetCamera;          // XR camera (CenterEye)
     public NavMeshAgent agent;             
@@ -53,6 +60,20 @@ public class FreezeOnLook : MonoBehaviour
 
     float repathTimer;
     float poseTimer;
+    [Header("Audio")]
+    public AudioSource footstepSource;
+    public AudioSource deathSource;
+
+    [Header("Footsteps")]
+    public AudioClip[] footstepClips;
+    public float stepInterval = 0.45f;          // base time between steps
+    public float minMoveSpeedForSteps = 0.2f;   // agent velocity threshold
+    public float stepIntervalSpeedScale = 1.0f; // higher = faster steps when running
+    float nextStepTime;
+
+    [Header("Death SFX")]
+    public AudioClip deathClip;
+    [Range(0f, 1f)] public float deathVolume = 1f;
 
     void OnEnable()
     {
@@ -75,6 +96,8 @@ public class FreezeOnLook : MonoBehaviour
 
     void Start()
     {
+        isDying = false;
+        nextKillCheckTime = 0f;
         if (targetCamera == null && Camera.main != null)
             targetCamera = Camera.main.transform;
 
@@ -118,6 +141,8 @@ public class FreezeOnLook : MonoBehaviour
         {
             UnfreezeAndMove();
             UpdatePoseSwap();
+            TryKillByDistance(); 
+            UpdateFootsteps();     
         }
     }
 
@@ -263,31 +288,131 @@ public class FreezeOnLook : MonoBehaviour
     }
     void OnTriggerEnter(Collider other) => TryKill(other);
     void OnTriggerStay(Collider other)  => TryKill(other);
-    // NEW: unified kill check
+
     void TryKill(Collider other)
     {
         if (isDying) return;
 
-        // throttle OnTriggerStay
-        if (Time.time < nextKillCheckTime) return;
-        nextKillCheckTime = Time.time + killCheckInterval;
-
         if (!armed) return;
         if (Time.time < armedAtTime + graceAfterArm) return;
 
-        // XR rigs often collide with hand/controller colliders:
-        // check root tag instead of the specific collider tag
+        // XR rigs collide via child colliders, so check root tag.
         if (!other.transform.root.CompareTag(playerTag)) return;
 
-        if (killOnlyWhenUnwatched && watchedState) return;
+        // IMPORTANT: use an immediate look check for death (not smoothed watchedState).
+        if (killOnlyWhenUnwatched && IsLookingAtMannequinForDeath()) return;
 
         isDying = true;
+        PlayDeathSfx();
         Freeze();
 
         if (DeathFade.Instance != null)
             DeathFade.Instance.DieAndReload();
         else
-            UnityEngine.SceneManagement.SceneManager.LoadScene(
-                UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    bool IsLookingAtMannequinForDeath()
+    {
+        // Get a camera
+        Camera cam = targetCamera ? targetCamera.GetComponent<Camera>() : null;
+        if (cam == null) cam = Camera.main;
+        if (cam == null) return false;
+
+        // Choose an aim point on the mannequin
+        Vector3 aim;
+        if (deathAimPoint != null) aim = deathAimPoint.position;
+        else if (renderersToCheck != null && renderersToCheck.Length > 0 && renderersToCheck[0] != null)
+            aim = renderersToCheck[0].bounds.center;
+        else
+            aim = transform.position;
+
+        Vector3 to = (aim - cam.transform.position);
+        float dist = to.magnitude;
+        if (dist <= 0.001f) return true;
+
+        Vector3 dir = to / dist;
+
+        // IMPORTANT: if it's behind you, you are NOT looking at it.
+        float dot = Vector3.Dot(cam.transform.forward, dir);
+        if (dot <= 0f) return false;
+
+        // Optional cone check (prevents "watched" when it's in peripheral)
+        float cos = Mathf.Cos(deathLookConeDegrees * Mathf.Deg2Rad);
+        if (dot < cos) return false;
+
+        // Line of sight (reuse your occluderMask)
+        if (Physics.Raycast(cam.transform.position, dir, dist, occluderMask, QueryTriggerInteraction.Ignore))
+            return false;
+
+        return true;
+    }
+    void TryKillByDistance()
+    {
+        if (isDying) return;
+        if (!armed) return;
+        if (Time.time < armedAtTime + graceAfterArm) return;
+        if (Time.time < nextAllowedKillTime) return;
+
+        // Only allow kill when not looked at
+        if (killOnlyWhenUnwatched && IsLookingAtMannequinForDeath()) return;
+
+        Vector3 mannequinPos = (killPoint != null) ? killPoint.position : transform.position;
+
+        // Use camera position (or playerRoot) as the "player" point
+        Vector3 playerPos = (targetCamera != null) ? targetCamera.position : playerRoot.position;
+
+        float d = Vector3.Distance(mannequinPos, playerPos);
+        if (d > killDistance) return;
+
+        nextAllowedKillTime = Time.time + killCooldown;
+
+        isDying = true;
+        PlayDeathSfx();
+        Freeze();
+
+        if (DeathFade.Instance != null)
+            DeathFade.Instance.DieAndReload();
+        else
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    void UpdateFootsteps()
+    {
+        if (footstepSource == null) return;
+        if (footstepClips == null || footstepClips.Length == 0) return;
+        if (agent == null) return;
+        if (isDying) return;
+
+        // Only play when actually moving
+        float speed = agent.velocity.magnitude;
+        bool shouldStep = !agent.isStopped && speed >= minMoveSpeedForSteps;
+
+        if (!shouldStep)
+        {
+            // reset timer so it doesn't instantly step when resuming
+            nextStepTime = Time.time + 0.05f;
+            return;
+        }
+
+        if (Time.time < nextStepTime) return;
+
+        // Optionally make steps faster when moving faster
+        float interval = stepInterval;
+        if (stepIntervalSpeedScale > 0.001f)
+        {
+            // Example: speed 1 -> normal interval, speed 2 -> half interval (tweak to taste)
+            interval = stepInterval / Mathf.Max(0.5f, speed * stepIntervalSpeedScale);
+        }
+
+        nextStepTime = Time.time + interval;
+
+        // Pick a random clip (avoid repeating the exact same one twice if you want)
+        var clip = footstepClips[Random.Range(0, footstepClips.Length)];
+        footstepSource.PlayOneShot(clip);
+    }
+
+    void PlayDeathSfx()
+    {
+        if (deathSource == null || deathClip == null) return;
+        deathSource.PlayOneShot(deathClip, deathVolume);
     }
 }
