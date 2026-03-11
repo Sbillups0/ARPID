@@ -15,9 +15,9 @@ TagManager:
   - UI
   - Floor
   - Enemy
-  - 
-  - 
-  - 
+  - LeverBase
+  - Lever
+  - PlayerHands
   - 
   - 
   - 
