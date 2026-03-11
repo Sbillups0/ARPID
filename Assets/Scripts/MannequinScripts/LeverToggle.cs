@@ -3,14 +3,18 @@ using UnityEngine;
 public class LeverToggle : MonoBehaviour
 {
     [Header("Lever")]
-    public HingeJoint hinge;                    // lever hinge
-    public float activateAngle = -75f;           // degrees past which it triggers
-    public bool useGreaterThan = false;          // depends on your hinge direction
-    public bool oneShot = true;                 // trigger once and stay
+    public HingeJoint hinge;
+    public float activateAngle = -75f;
+    public bool useGreaterThan = false;
+    public bool oneShot = true;
+
+    [Header("Locking")]
+    public bool lockLeverDownOnActivate = true;
+    public bool disableGrabOnActivate = true;   // requires XRGrabInteractable on same object (optional)
 
     [Header("Door Reveal Objects")]
-    public GameObject wallClosed;               // the solid wall
-    public GameObject wallWithDoorway;          // the doorway version
+    public GameObject wallClosed;
+    public GameObject wallWithDoorway;
 
     [Header("Optional")]
     public bool startRevealed = false;
@@ -19,10 +23,10 @@ public class LeverToggle : MonoBehaviour
 
     void Start()
     {
-        SetRevealed(startRevealed);
-
         if (hinge == null)
             hinge = GetComponent<HingeJoint>();
+
+        SetRevealed(startRevealed);
     }
 
     void Update()
@@ -30,11 +34,9 @@ public class LeverToggle : MonoBehaviour
         if (hinge == null) return;
         if (oneShot && revealed) return;
 
-        // hinge.angle is in degrees, relative to joint's reference position
         float a = hinge.angle;
 
-        bool pulled =
-            useGreaterThan ? (a >= activateAngle) : (a <= activateAngle);
+        bool pulled = useGreaterThan ? (a >= activateAngle) : (a <= activateAngle);
 
         if (pulled)
             SetRevealed(true);
@@ -46,5 +48,38 @@ public class LeverToggle : MonoBehaviour
 
         if (wallClosed) wallClosed.SetActive(!revealed);
         if (wallWithDoorway) wallWithDoorway.SetActive(revealed);
+
+        if (revealed && lockLeverDownOnActivate)
+            LockLeverDown();
+    }
+
+    void LockLeverDown()
+    {
+        if (hinge == null) return;
+
+        // Force the hinge limits to a tiny window around the DOWN limit (hinge.limits.min).
+        var limits = hinge.limits;
+        float down = limits.min;
+
+        limits.min = down - 0.5f;
+        limits.max = down + 0.5f;
+
+        hinge.limits = limits;
+        hinge.useLimits = true;
+
+        // Optional: stop any residual motion
+        var rb = hinge.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.angularVelocity = Vector3.zero;
+            rb.linearVelocity = Vector3.zero;
+        }
+
+        // Optional: prevent grabbing after activation
+        if (disableGrabOnActivate)
+        {
+            var grab = GetComponent<UnityEngine.XR.Interaction.Toolkit.Interactables.XRGrabInteractable>();
+            if (grab != null) grab.enabled = false;
+        }
     }
 }
