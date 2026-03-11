@@ -61874,7 +61874,7 @@ MonoBehaviour:
   - {fileID: 42764342}
   - {fileID: 1287026711}
   segmentTimes:
-  - 50
+  - 60
   useSameTimeForAllSegments: 0
   sameSegmentTime: 50
   affectObjects:
