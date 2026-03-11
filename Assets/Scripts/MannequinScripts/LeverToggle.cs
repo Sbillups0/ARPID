@@ -4,8 +4,8 @@ public class LeverToggle : MonoBehaviour
 {
     [Header("Lever")]
     public HingeJoint hinge;                    // lever hinge
-    public float activateAngle = 45f;           // degrees past which it triggers
-    public bool useGreaterThan = true;          // depends on your hinge direction
+    public float activateAngle = -75f;           // degrees past which it triggers
+    public bool useGreaterThan = false;          // depends on your hinge direction
     public bool oneShot = true;                 // trigger once and stay
 
     [Header("Door Reveal Objects")]
