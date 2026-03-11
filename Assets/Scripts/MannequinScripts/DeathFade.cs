@@ -12,12 +12,7 @@ public class DeathFade : MonoBehaviour
     public float fadeDuration = 0.6f;
     public float holdBlackTime = 0.15f;
 
-    [Header("Canvas binding")]
-    public Canvas canvas;                 // assign DeathScreen canvas here (or auto)
-    public string cameraTag = "MainCamera";
-
-    bool dying;
-    Coroutine currentRoutine;
+    bool busy;
 
     void Awake()
     {
@@ -26,62 +21,9 @@ public class DeathFade : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
-
         DontDestroyOnLoad(gameObject);
-
-        if (canvas == null) canvas = GetComponent<Canvas>();
-
-        ResetFadeState();
-        BindCanvasToCurrentCamera();
-    }
-
-    void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    void OnDisable()
-    {
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
-    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        // IMPORTANT: after reload, the camera is new. Rebind canvas to it.
-        BindCanvasToCurrentCamera();
-        ResetFadeState();
-    }
-
-    void BindCanvasToCurrentCamera()
-    {
-        if (canvas == null) return;
-
-        // Only needed for Screen Space - Camera
-        if (canvas.renderMode == RenderMode.ScreenSpaceCamera)
-        {
-            Camera cam = Camera.main;
-
-            // Fallback by tag if needed
-            if (cam == null)
-            {
-                var go = GameObject.FindGameObjectWithTag(cameraTag);
-                if (go != null) cam = go.GetComponent<Camera>();
-            }
-
-            canvas.worldCamera = cam;
-        }
-    }
-
-    void ResetFadeState()
-    {
-        dying = false;
-
-        if (currentRoutine != null)
-        {
-            StopCoroutine(currentRoutine);
-            currentRoutine = null;
-        }
 
         if (fadeImage != null)
         {
@@ -94,18 +36,48 @@ public class DeathFade : MonoBehaviour
 
     public void DieAndReload()
     {
-        if (dying) return;
-        currentRoutine = StartCoroutine(DieRoutine());
+        if (busy) return;
+        StartCoroutine(FadeAndReloadRoutine());
     }
 
-    IEnumerator DieRoutine()
+    public void FadeAndLoadScene(string sceneName)
     {
-        dying = true;
+        if (busy) return;
+        StartCoroutine(FadeAndLoadRoutine(sceneName));
+    }
+
+    public void FadeAndReloadCurrentScene()
+    {
+        if (busy) return;
+        StartCoroutine(FadeAndReloadRoutine());
+    }
+
+    IEnumerator FadeAndLoadRoutine(string sceneName)
+    {
+        busy = true;
 
         yield return FadeTo(1f, fadeDuration);
         yield return new WaitForSecondsRealtime(holdBlackTime);
 
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        SceneManager.LoadScene(sceneName);
+        busy = false;
+    }
+
+    IEnumerator FadeAndReloadRoutine()
+    {
+        busy = true;
+
+        yield return FadeTo(1f, fadeDuration);
+        yield return new WaitForSecondsRealtime(holdBlackTime);
+
+        var scene = SceneManager.GetActiveScene();
+        SceneManager.LoadScene(scene.buildIndex);
+        busy = false;
+    }
+
+    public IEnumerator FadeFromBlack(float duration)
+    {
+        yield return FadeTo(0f, duration);
     }
 
     IEnumerator FadeTo(float targetAlpha, float duration)
