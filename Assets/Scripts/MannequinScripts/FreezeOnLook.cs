@@ -1,13 +1,22 @@
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.SceneManagement;
 
 public class FreezeOnLook : MonoBehaviour
 {
     [Header("Activation")]
     public bool behaviorEnabled = true;
+    [Header("Death")]
+    public string playerTag = "Player";
+    public bool killOnlyWhenUnwatched = true;
+    bool isDying;
+    public float killCheckInterval = 0.1f;   // NEW: prevents spam in OnTriggerStay
+    float nextKillCheckTime;
+
     [Header("References")]
     public Transform targetCamera;          // XR camera (CenterEye)
     public NavMeshAgent agent;             
+    
 
     [Header("Look detection")]
     public float maxLookDistance = 30f;
@@ -35,7 +44,9 @@ public class FreezeOnLook : MonoBehaviour
     [Header("Activation")]
     public bool armed = false;                 // threat armed?
     public float graceAfterArm = 1.0f;         // seconds before they can move after arming
-
+    // Add this field (optional)
+    [Header("Default (no animation) state")]
+    public bool keepDefaultUntilArmed = true;
     float armedAtTime = -999f;
     float watchTimer;
     bool watchedState;
@@ -43,6 +54,20 @@ public class FreezeOnLook : MonoBehaviour
     float repathTimer;
     float poseTimer;
 
+    void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        isDying = false;
+    }
     void Reset()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -57,6 +82,10 @@ public class FreezeOnLook : MonoBehaviour
             renderersToCheck = GetComponentsInChildren<Renderer>();
 
         poseTimer = Random.Range(minPoseHold, maxPoseHold);
+
+        // NEW: keep mannequin in its scene/default pose until armed
+        if (keepDefaultUntilArmed && animator != null)
+            animator.enabled = false;
     }
 
     void Update()
@@ -223,10 +252,42 @@ public class FreezeOnLook : MonoBehaviour
         graceAfterArm = graceSeconds;
         armedAtTime = Time.time;
 
-        // Optional: reset smoothing so they don't instantly "unwatch" into motion
         watchTimer = 0f;
         watchedState = true;
 
+        // NEW: turn animation on only when armed
+        if (animator != null && keepDefaultUntilArmed)
+            animator.enabled = true;
+
         Freeze();
+    }
+    void OnTriggerEnter(Collider other) => TryKill(other);
+    void OnTriggerStay(Collider other)  => TryKill(other);
+    // NEW: unified kill check
+    void TryKill(Collider other)
+    {
+        if (isDying) return;
+
+        // throttle OnTriggerStay
+        if (Time.time < nextKillCheckTime) return;
+        nextKillCheckTime = Time.time + killCheckInterval;
+
+        if (!armed) return;
+        if (Time.time < armedAtTime + graceAfterArm) return;
+
+        // XR rigs often collide with hand/controller colliders:
+        // check root tag instead of the specific collider tag
+        if (!other.transform.root.CompareTag(playerTag)) return;
+
+        if (killOnlyWhenUnwatched && watchedState) return;
+
+        isDying = true;
+        Freeze();
+
+        if (DeathFade.Instance != null)
+            DeathFade.Instance.DieAndReload();
+        else
+            UnityEngine.SceneManagement.SceneManager.LoadScene(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene().buildIndex);
     }
 }

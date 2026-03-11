@@ -1981,6 +1981,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7194595291290214969, guid: 27658463f1aa886419624a3d176aacd3, type: 3}
   m_PrefabInstance: {fileID: 485461908}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &494158743 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5824827161956504600, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
+  m_PrefabInstance: {fileID: 1667514796}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6481b461e8b7a547a90977438a0e8b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CeilingLightController
 --- !u!43 &522540130
 Mesh:
   m_ObjectHideFlags: 0
@@ -2925,7 +2936,9 @@ MonoBehaviour:
   - name: MainRoom
     roots:
     - {fileID: 936331508}
-    directCeilings: []
+    directCeilings:
+    - {fileID: 494158743}
+    - {fileID: 1364530259}
   - name: Hall0
     roots:
     - {fileID: 1070776033}
@@ -3926,7 +3939,7 @@ MonoBehaviour:
   segmentTimes:
   - 30
   useSameTimeForAllSegments: 0
-  sameSegmentTime: 30
+  sameSegmentTime: 4
   affectObjects:
   - {fileID: 936331508}
   - {fileID: 1070776033}
@@ -6772,6 +6785,17 @@ Mesh:
       - serializedVersion: 1
         m_IndexStart: 0
         m_IndexCount: 0
+--- !u!114 &1364530259 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 5786167687817649731, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
+  m_PrefabInstance: {fileID: 1667514796}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6481b461e8b7a547a90977438a0e8b1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CeilingLightController
 --- !u!1001 &1373536117
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24272,6 +24296,10 @@ PrefabInstance:
       value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 5824827161956504600, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
+      propertyPath: startOn
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5824827161956504600, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
       propertyPath: startUseSecondary
       value: 0
       objectReference: {fileID: 0}
@@ -26653,7 +26681,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.018
+      value: -32.53
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.y
@@ -26661,7 +26689,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 17.472
+      value: -36.08
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalRotation.w
@@ -72143,7 +72171,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1774190168271678703, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: startOn
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1774190168271678703, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: m_Enabled
@@ -72299,7 +72327,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2622328839725306238, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: startOn
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2622328839725306238, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: m_Enabled
@@ -72319,7 +72347,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2622328839725306238, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: startAllPairsFlicker
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 2622328839725306238, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: emissionMirrorsFlicker
@@ -72611,7 +72639,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5792144671922105553, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: startOn
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5792144671922105553, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: m_Enabled
@@ -72631,7 +72659,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5792144671922105553, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: startAllPairsFlicker
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5792144671922105553, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: emissionMirrorsFlicker
@@ -72783,7 +72811,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7563960259122073764, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: startOn
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7563960259122073764, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: m_Enabled
@@ -72803,7 +72831,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7563960259122073764, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: startAllPairsFlicker
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7563960259122073764, guid: fa6d91d16669e384183cfa79c4de797f, type: 3}
       propertyPath: emissionMirrorsFlicker
