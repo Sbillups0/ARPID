@@ -11,7 +11,7 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/BasicScene.unity
     guid: 4e9fef26e6adb88479ad1b9834a32d94
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/Pursuit.unity
     guid: 6d5c4f92d55e7d54990a54c41dc0a8c9
   - enabled: 1
