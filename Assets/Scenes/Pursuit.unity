@@ -198812,6 +198812,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1669117837309410624, guid: 44f1188352b07004ba03c504de8f44c2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 1.006
+      objectReference: {fileID: 0}
     - target: {fileID: 4185924111325101810, guid: 44f1188352b07004ba03c504de8f44c2, type: 3}
       propertyPath: m_Name
       value: SpawnPoints
