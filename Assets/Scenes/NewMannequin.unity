@@ -26,7 +26,7 @@ RenderSettings:
   m_AmbientIntensity: 3
   m_AmbientMode: 3
   m_SubtractiveShadowColor: {r: 0.051554922, g: 0.022961887, b: 0.2830189, a: 1}
-  m_SkyboxMaterial: {fileID: 2100000, guid: 5c0a64b402b98b84d92d372d881f346a, type: 2}
+  m_SkyboxMaterial: {fileID: 2100000, guid: 3b1dfe74f6c814e409f576cbcc665216, type: 2}
   m_HaloStrength: 0.5
   m_FlareStrength: 1
   m_FlareFadeSpeed: 3
@@ -22382,7 +22382,7 @@ MonoBehaviour:
     - {fileID: 936331508}
     directCeilings:
     - {fileID: 494158743}
-    - {fileID: 1364530259}
+    - {fileID: 0}
     - {fileID: 1068556091}
     - {fileID: 1068110343}
     - {fileID: 1309098471}
@@ -22399,19 +22399,19 @@ MonoBehaviour:
     - {fileID: 1489490762}
     - {fileID: 1896179598}
     - {fileID: 488417533}
-    - {fileID: 1756719143}
+    - {fileID: 0}
     - {fileID: 320789194}
     - {fileID: 1418558019}
     - {fileID: 953122947}
     - {fileID: 1249545355}
     - {fileID: 2032655992}
-    - {fileID: 2092041100}
+    - {fileID: 0}
     - {fileID: 1838410375}
     - {fileID: 955347946}
     - {fileID: 226558506}
     - {fileID: 769101051}
     - {fileID: 444197324}
-    - {fileID: 1764466119}
+    - {fileID: 0}
     - {fileID: 1914326424}
     - {fileID: 950138645}
     - {fileID: 1642223716}
@@ -41767,17 +41767,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5656130700257643944, guid: 4cb357c3bb831ef4ca24373bd70f6bbc, type: 3}
   m_PrefabInstance: {fileID: 1359850799}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1364530259 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 5786167687817649731, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
-  m_PrefabInstance: {fileID: 1667514796}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6481b461e8b7a547a90977438a0e8b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CeilingLightController
 --- !u!1001 &1367904662
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -63476,11 +63465,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8614306511269300536, guid: 44f1188352b07004ba03c504de8f44c2, type: 3}
       propertyPath: targetSceneName
-      value: Pursuit
+      value: Credits
       objectReference: {fileID: 0}
     - target: {fileID: 8614306511269300536, guid: 44f1188352b07004ba03c504de8f44c2, type: 3}
       propertyPath: targetSpawnIdInNextScene
-      value: PursuitRespawn
+      value: CreditsRespawn
       objectReference: {fileID: 0}
     - target: {fileID: 8768088606540169769, guid: 44f1188352b07004ba03c504de8f44c2, type: 3}
       propertyPath: respawnId
@@ -68331,7 +68320,7 @@ PrefabInstance:
       objectReference: {fileID: 588163145}
     - target: {fileID: 5786167687817649731, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
       propertyPath: startOn
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5786167687817649731, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
       propertyPath: startUseSecondary
@@ -68388,6 +68377,10 @@ PrefabInstance:
     - target: {fileID: 7383930592737911140, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
       propertyPath: m_VersionIndex
       value: 27
+      objectReference: {fileID: 0}
+    - target: {fileID: 7443719545630454710, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
+      propertyPath: m_Name
+      value: 8x6-CeilingLight1STON
       objectReference: {fileID: 0}
     - target: {fileID: 7873974270462454330, guid: 386cecce1d4f845d4ab7b1c92a4bfc81, type: 3}
       propertyPath: startUseSecondary
@@ -72223,11 +72216,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6735658057538308464, guid: 485762c8807db314dacdf0b1f9db80fe, type: 3}
       propertyPath: startOn
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 7671920409742681221, guid: 485762c8807db314dacdf0b1f9db80fe, type: 3}
       propertyPath: m_Name
-      value: 8x6-CeilingLight (4)
+      value: 8x6-CeilingLightNEXTON
       objectReference: {fileID: 0}
     - target: {fileID: 7866391181794776751, guid: 485762c8807db314dacdf0b1f9db80fe, type: 3}
       propertyPath: m_Mesh
@@ -72243,17 +72236,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5247857783040659451, guid: 485762c8807db314dacdf0b1f9db80fe, type: 3}
   m_PrefabInstance: {fileID: 1756719141}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1756719143 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6735658057538308464, guid: 485762c8807db314dacdf0b1f9db80fe, type: 3}
-  m_PrefabInstance: {fileID: 1756719141}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6481b461e8b7a547a90977438a0e8b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CeilingLightController
 --- !u!1001 &1764120816
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -72381,7 +72363,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3157674750209808181, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
       propertyPath: m_Name
-      value: 8x12-CeilingLight (11)
+      value: 8x12-CeilingLight4THON
       objectReference: {fileID: 0}
     - target: {fileID: 3889234128431606816, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
       propertyPath: m_Mesh
@@ -72441,17 +72423,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7325079634210584003, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
   m_PrefabInstance: {fileID: 1764466117}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1764466119 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2476314838221840918, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
-  m_PrefabInstance: {fileID: 1764466117}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6481b461e8b7a547a90977438a0e8b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CeilingLightController
 --- !u!1001 &1768814416
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -91177,7 +91148,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3157674750209808181, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
       propertyPath: m_Name
-      value: 8x12-CeilingLight (5)
+      value: 8x12-CeilingLight3RDON
       objectReference: {fileID: 0}
     - target: {fileID: 3889234128431606816, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
       propertyPath: m_Mesh
@@ -91237,17 +91208,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7325079634210584003, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
   m_PrefabInstance: {fileID: 2092041098}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &2092041100 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2476314838221840918, guid: 3bf638c7b4dce104781d71e8a988150a, type: 3}
-  m_PrefabInstance: {fileID: 2092041098}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e6481b461e8b7a547a90977438a0e8b1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CeilingLightController
 --- !u!1 &2093180662
 GameObject:
   m_ObjectHideFlags: 0
