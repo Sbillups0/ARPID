@@ -6696,6 +6696,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: 5W3M-FinalSynthWall (27)
       objectReference: {fileID: 0}
+    - target: {fileID: 231159075809689498, guid: c3d0a0d3f35eeaf43b318bb6c08d4d62, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 354000225494497292, guid: c3d0a0d3f35eeaf43b318bb6c08d4d62, type: 3}
       propertyPath: m_Mesh
       value: 
@@ -28297,7 +28301,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &430390045
 RectTransform:
   m_ObjectHideFlags: 0
@@ -47956,7 +47960,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: 0.206
       objectReference: {fileID: 0}
     - target: {fileID: 8806329115733545878, guid: 77e7c27b2c5525e4aa8cc9f99d654486, type: 3}
       propertyPath: m_LocalPosition.z
@@ -52610,6 +52614,10 @@ PrefabInstance:
       value: 1.049
       objectReference: {fileID: 0}
     - target: {fileID: 1669117837309410624, guid: 44f1188352b07004ba03c504de8f44c2, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.767
+      objectReference: {fileID: 0}
+    - target: {fileID: 1669117837309410624, guid: 44f1188352b07004ba03c504de8f44c2, type: 3}
       propertyPath: m_LocalPosition.z
       value: 1.586
       objectReference: {fileID: 0}
@@ -53819,7 +53827,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ToggleWall
   wallsToDisable:
   - {fileID: 591842797}
-  - {fileID: 569070761}
   - {fileID: 503540978}
   wallsToEnable:
   - {fileID: 2025805652}
