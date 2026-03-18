@@ -57,7 +57,7 @@ public class LeverToggle : MonoBehaviour
     {
         if (hinge == null) return;
 
-        // Force the hinge limits to a tiny window around the DOWN limit (hinge.limits.min).
+        // Force the hinge limits to a tiny window around the DOWN limit 
         var limits = hinge.limits;
         float down = limits.min;
 
@@ -67,7 +67,6 @@ public class LeverToggle : MonoBehaviour
         hinge.limits = limits;
         hinge.useLimits = true;
 
-        // Optional: stop any residual motion
         var rb = hinge.GetComponent<Rigidbody>();
         if (rb != null)
         {

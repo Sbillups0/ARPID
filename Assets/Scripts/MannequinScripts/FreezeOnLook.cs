@@ -10,18 +10,18 @@ public class FreezeOnLook : MonoBehaviour
     public string playerTag = "Player";
     public bool killOnlyWhenUnwatched = true;
     bool isDying;
-    public float killCheckInterval = 0f;   // NEW: prevents spam in OnTriggerStay
+    public float killCheckInterval = 0f;   // prevents spam in OnTriggerStay
     float nextKillCheckTime;
     [Header("Death - look check")]
     public float deathLookConeDegrees = 55f;   // smaller = stricter "must be looking at it"
-    public Transform deathAimPoint;            // optional: assign a head/chest bone; otherwise uses renderers bounds center
+    public Transform deathAimPoint;            
     [Header("Death - distance fallback")]
     public float killDistance = 0.6f;              // tune (0.4–0.8 usually)
-    public Transform killPoint;                    // optional (e.g., mannequin chest/head)
+    public Transform killPoint;                   
     public float killCooldown = 0.25f;             // prevents double-firing
     float nextAllowedKillTime;
     [Header("References")]
-    public Transform targetCamera;          // XR camera (CenterEye)
+    public Transform targetCamera;          // XR camera 
     public NavMeshAgent agent;             
     
 
@@ -41,8 +41,8 @@ public class FreezeOnLook : MonoBehaviour
     public float maxPoseHold = 1.5f;
 
     [Header("Screen visibility")]
-    public Renderer[] renderersToCheck;     // leave empty to auto-grab
-    public float visibilityPadding = 0.02f; // helps at screen edges
+    public Renderer[] renderersToCheck;     
+    public float visibilityPadding = 0.02f;
 
     [Header("Watch smoothing")]
     public float watchGraceOn = 0.05f;      // seconds required to become watched
@@ -106,7 +106,7 @@ public class FreezeOnLook : MonoBehaviour
 
         poseTimer = Random.Range(minPoseHold, maxPoseHold);
 
-        // NEW: keep mannequin in its scene/default pose until armed
+        // keep mannequin in its scene/default pose until armed
         if (keepDefaultUntilArmed && animator != null)
             animator.enabled = false;
     }
@@ -160,11 +160,11 @@ public class FreezeOnLook : MonoBehaviour
         {
             if (r == null) continue;
 
-            // Skip if too far (use bounds center for distance)
+            // Skip if too far 
             float dist = Vector3.Distance(camPos, r.bounds.center);
             if (dist > maxLookDistance) continue;
 
-            // Check a few key points on the bounds (center + extents)
+            // Check a few key points on the bounds
             if (BoundsVisibleAndNotOccluded(cam, r.bounds))
                 return true;
         }
@@ -174,7 +174,6 @@ public class FreezeOnLook : MonoBehaviour
 
     bool BoundsVisibleAndNotOccluded(Camera cam, Bounds b)
     {
-        // Sample center + 6 face points (good coverage, cheap)
         Vector3 c = b.center;
         Vector3 e = b.extents;
 
@@ -202,7 +201,6 @@ public class FreezeOnLook : MonoBehaviour
     {
         Vector3 vp = cam.WorldToViewportPoint(worldPoint);
 
-        // vp.z < 0 means behind the camera
         if (vp.z <= 0f) return false;
 
         float pad = visibilityPadding;
@@ -266,7 +264,7 @@ public class FreezeOnLook : MonoBehaviour
         {
             poseTimer = Random.Range(minPoseHold, maxPoseHold);
 
-            // Example: randomly pick between 0..2
+            // random poses
             int next = Random.Range(0, 3);
             animator.SetInteger(poseIndexParam, next);
         }
@@ -280,7 +278,7 @@ public class FreezeOnLook : MonoBehaviour
         watchTimer = 0f;
         watchedState = true;
 
-        // NEW: turn animation on only when armed
+        // turn animation on only when armed
         if (animator != null && keepDefaultUntilArmed)
             animator.enabled = true;
 
@@ -296,10 +294,10 @@ public class FreezeOnLook : MonoBehaviour
         if (!armed) return;
         if (Time.time < armedAtTime + graceAfterArm) return;
 
-        // XR rigs collide via child colliders, so check root tag.
+        
         if (!other.transform.root.CompareTag(playerTag)) return;
 
-        // IMPORTANT: use an immediate look check for death (not smoothed watchedState).
+        // use an immediate look check for death (not smoothed watchedState).
         if (killOnlyWhenUnwatched && IsLookingAtMannequinForDeath()) return;
 
         isDying = true;
@@ -332,15 +330,14 @@ public class FreezeOnLook : MonoBehaviour
 
         Vector3 dir = to / dist;
 
-        // IMPORTANT: if it's behind you, you are NOT looking at it.
+        // if it's behind you, you are NOT looking at it.
         float dot = Vector3.Dot(cam.transform.forward, dir);
         if (dot <= 0f) return false;
 
-        // Optional cone check (prevents "watched" when it's in peripheral)
         float cos = Mathf.Cos(deathLookConeDegrees * Mathf.Deg2Rad);
         if (dot < cos) return false;
 
-        // Line of sight (reuse your occluderMask)
+        // Line of sight (occluderMask)
         if (Physics.Raycast(cam.transform.position, dir, dist, occluderMask, QueryTriggerInteraction.Ignore))
             return false;
 
@@ -399,13 +396,12 @@ public class FreezeOnLook : MonoBehaviour
         float interval = stepInterval;
         if (stepIntervalSpeedScale > 0.001f)
         {
-            // Example: speed 1 -> normal interval, speed 2 -> half interval (tweak to taste)
             interval = stepInterval / Mathf.Max(0.5f, speed * stepIntervalSpeedScale);
         }
 
         nextStepTime = Time.time + interval;
 
-        // Pick a random clip (avoid repeating the exact same one twice if you want)
+        // Pick a random clip
         var clip = footstepClips[Random.Range(0, footstepClips.Length)];
         footstepSource.PlayOneShot(clip);
     }
