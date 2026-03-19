@@ -3,7 +3,7 @@ using UnityEngine;
 public class FootStepPlayer : MonoBehaviour
 {
     [Header("Refs")]
-    public Transform rigRoot;          // the object that moves (often XR Origin)
+    public Transform rigRoot;          // the object that moves 
     public AudioSource footstepSource; // can be on rigRoot
     public AudioClip[] footstepClips;
 

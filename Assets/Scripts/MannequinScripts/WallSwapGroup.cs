@@ -32,7 +32,7 @@ public class WallSwapGroup : MonoBehaviour
     public bool swapOnlyOnce = true;
 
     [Header("Collision")]
-    public Collider blockerCollider;          // drag your BoxCollider here
+    public Collider blockerCollider;          // no longer used, replaced with separate colliders
     public bool colliderMatchesStateB = true; // if StateB is the "closed" wall
 
     Transform _head;
@@ -74,7 +74,7 @@ public class WallSwapGroup : MonoBehaviour
         // Not looked at this frame
         _notLookedTimer += Time.deltaTime;
 
-        // Ignore brief loss of sight (enemy crossing, tiny jitter)
+        // Ignore brief loss of sight
         if (_notLookedTimer < occlusionGraceSeconds)
             return;
 
@@ -107,7 +107,7 @@ public class WallSwapGroup : MonoBehaviour
         var cam = Camera.main;
         if (cam == null) return false;
 
-        // On-screen test (Option 3)
+        // On-screen test
         Vector3 vp = cam.WorldToViewportPoint(watchTarget.position);
         if (vp.z <= 0f) return false;
         if (vp.x < 0f || vp.x > 1f || vp.y < 0f || vp.y > 1f) return false;
@@ -141,7 +141,7 @@ public class WallSwapGroup : MonoBehaviour
 
     void SwapToB()
     {
-        if (!_isAActive) return; // already B
+        if (!_isAActive) return; 
 
         _isAActive = false;
         ApplyState();

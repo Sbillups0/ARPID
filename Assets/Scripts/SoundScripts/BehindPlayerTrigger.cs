@@ -3,7 +3,7 @@ using UnityEngine;
 public class BehindPlayerTrigger : MonoBehaviour
 {
     public AudioClip soundClip;
-    public Transform playerCamera;  // assign your XR camera transform
+    public Transform playerCamera;  // assign XR camera transform
     public float behindDistance = 2.0f;
     public float volume = 1.0f;
     public bool oneTime = true;
@@ -14,7 +14,6 @@ public class BehindPlayerTrigger : MonoBehaviour
     {
         if (fired && oneTime) return;
 
-        // Option A: simplest filter: check tag on rig root
         if (!other.CompareTag("Player")) return;
 
         FireKnock();
@@ -35,7 +34,7 @@ public class BehindPlayerTrigger : MonoBehaviour
         src.dopplerLevel = 0f;
         src.rolloffMode = AudioRolloffMode.Linear;
 
-        // Tune distances so it feels close but behind you
+        // Tune distances
         src.minDistance = 0.5f;
         src.maxDistance = 12f;
 
